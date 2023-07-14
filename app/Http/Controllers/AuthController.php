@@ -2,13 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Auth\LoginRequest;
+use App\Http\Requests\Auth\StoreUserRequest;
+use App\Libraries\Responder\Facades\ResponderFacade;
 use Exception;
 use App\Models\User;
-use App\Http\Requests\LoginRequest;
-use App\Http\Requests\StoreUserRequest;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
-use MilanTarami\ApiResponseBuilder\Facades\ResponseBuilder;
 
 class AuthController extends Controller
 {
@@ -21,13 +21,13 @@ class AuthController extends Controller
     {
         try {
             $user = User::query()->create($request->validated());
-            return ResponseBuilder::asSuccess()
-                ->withData($user)
-                ->append('token', $user->createToken("API TOKEN")->plainTextToken)
-                ->build();
+            $user->token = $user->createToken("API TOKEN")->plainTextToken;
+            return ResponderFacade::setData($user)->respond();
 
         } catch (Exception $exception) {
-            return ResponseBuilder::error($exception);
+            return ResponderFacade::
+                setExceptionMessage($exception->getMessage())
+                ->respondError();
         }
     }
 
@@ -39,17 +39,28 @@ class AuthController extends Controller
     public function login(LoginRequest $request): JsonResponse
     {
         try {
-            if(!Auth::attempt($request->only(['email', 'password']))){
-                return ResponseBuilder::asError()
-                    ->withMessage('Email & Password does not match with our record.')
-                    ->build();
+            $type = 'username';
+            if(filter_var($request->username, FILTER_VALIDATE_EMAIL) !== false)
+            {
+                $type='email';
+                $data = [
+                    "email" => $request->username,
+                    "password" => $request->password
+                ];
+            }else $data = request()->all();
+            if(!Auth::attempt($data)){
+                return ResponderFacade::
+                    setExceptionMessage('The information entered is incorrect.')
+                    ->respondError();
             }
-            $user = User::where('email', $request->email)->first();
-            return ResponseBuilder::asSuccess()
-                ->append('token', $user->createToken("API TOKEN")->plainTextToken)
-                ->build();
+            $user = User::where($type, $request->username)->first();
+            $user->token = $user->createToken("API TOKEN")->plainTextToken;
+            return ResponderFacade::setData($user)
+                ->respond();
         } catch (Exception $exception) {
-            return ResponseBuilder::error($exception);
+            return ResponderFacade::
+                setExceptionMessage($exception->getMessage())
+                ->respondError();
         }
     }
 }
