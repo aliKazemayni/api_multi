@@ -15,6 +15,8 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->integer('price');
+            $table->foreignId('company_id')->references('id')
+                ->on('api_multi.companies')->onDelete('cascade');
             $table->timestamps();
         });
     }

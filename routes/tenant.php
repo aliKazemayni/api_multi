@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CompanyController;
+use App\Http\Controllers\ProductController;
 use Illuminate\Support\Facades\Route;
 use Stancl\Tenancy\Middleware\InitializeTenancyByDomain;
 use Stancl\Tenancy\Middleware\PreventAccessFromCentralDomains;
@@ -26,6 +27,6 @@ Route::post('/auth/register', [AuthController::class, 'register']);
 Route::middleware(['auth:sanctum'])->group(function () {
     Route::apiResource('company' , CompanyController::class);
     Route::middleware(['api', InitializeTenancyByDomain::class])->group(function () {
-
+        Route::apiResource('product' , ProductController::class);
     });
 });
