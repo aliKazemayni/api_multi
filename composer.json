@@ -10,7 +10,8 @@
         "laravel/framework": "^10.10",
         "laravel/sanctum": "^3.2",
         "laravel/tinker": "^2.8",
-        "miladshm/controller-helpers": "^0.6.4"
+        "miladshm/controller-helpers": "^0.8.5",
+        "stancl/tenancy": "^3.7"
     },
     "require-dev": {
         "fakerphp/faker": "^1.9.1",
